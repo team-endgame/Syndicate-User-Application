@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
@@ -48,16 +49,15 @@ import java.util.Date;
 
 public class MainActivity extends AppCompatActivity  {
 
-    private Button mrecord;
+    private Button mrecord,finish;
     private TextView mTextView;
-    private TextView numberphone;
 
     private MediaRecorder mRecorder;
+
 
     private String mFileName = null;
 
     private static final String LOG_TAG = "Record_log";
-
 
     private StorageReference mStorage;
     private ProgressDialog mProgress;
@@ -65,15 +65,10 @@ public class MainActivity extends AppCompatActivity  {
     private FirebaseAuth mAuth;
     private DatabaseReference ref;
 
-
-    private static double lat =0.0;
-    private static double lon = 0.0;
-
-
     String save;
     String millisInString;
 
-
+    int f =0 ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,150 +83,92 @@ public class MainActivity extends AppCompatActivity  {
 
         mTextView = (TextView)findViewById(R.id.recordLabel);
         mrecord = (Button)findViewById(R.id.recordBtn);
-        numberphone = (TextView)findViewById(R.id.number);
+        finish = (Button) findViewById(R.id.finish);
 
-        mProgress =  new ProgressDialog(this);
+           mProgress =  new ProgressDialog(this);
 
         mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-        mFileName += "/"+millisInString;
+        mFileName += "/audio.mp4";
 
         mStorage = FirebaseStorage.getInstance().getReference();
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
          millisInString  = dateFormat.format(new Date());
 
-        CheckUserPermsions();
 
-        TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
-        @SuppressLint("MissingPermission") String number = tm.getLine1Number();
-        System.out.println(number);
-        numberphone.setText(number);
 
         mrecord.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                ref.child(save).child("Latitude").setValue(lat);
-                ref.child(save).child("Longitude").setValue(lon);
-                ref.child(save).child("Contact").setValue(save);
-                ref.child(save).child("Status").setValue("Pending");
 
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
+
                     startRecording();
-                    mTextView.setText("Recording Started..");
+                    mTextView.setText("Recording..");
 
                 }
                 else if(event.getAction() == MotionEvent.ACTION_UP){
-                    stopRecording();
-                    mTextView.setText("Recording Stopped..");
+
+                   pauseRecording();
+                    mTextView.setText("Recording Paused..");
                 }
 
                 return false;
             }
         });
 
-    }
+        finish.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stopRecording();
+                mTextView.setText("Recording Completed.");
 
-
-
-    void CheckUserPermsions(){
-        if ( Build.VERSION.SDK_INT >= 23){
-            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) !=
-                    PackageManager.PERMISSION_GRANTED  ){
-                requestPermissions(new String[]{
-                                android.Manifest.permission.ACCESS_FINE_LOCATION},
-                        REQUEST_CODE_ASK_PERMISSIONS);
-                return ;
             }
-        }
+        });
 
-        runlisner();
-    }
-
-    final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
-
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_CODE_ASK_PERMISSIONS:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    runlisner();
-                } else {
-
-                    Toast.makeText( this,"cannot access " , Toast.LENGTH_SHORT)
-                            .show();
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-    }
-    void runlisner(){
-        locationlisner myloc=new locationlisner();
-        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER,3, 1000, myloc);
-
-        mythread myth = new mythread();
-        myth.start();
 
     }
-
-    class mythread extends  Thread{
-        public void  run(){
-
-
-            while(true){
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        if(locationlisner.location != null) {
-                            LatLng present = new LatLng(locationlisner.location.getLatitude(), locationlisner.location.getLongitude());
-                            lat = locationlisner.location.getLatitude();
-                            lon = locationlisner.location.getLongitude();
-
-                        }
-                    }
-                });
-
-
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
 
 
     private void startRecording() {
-         mRecorder = new MediaRecorder();
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
-        mRecorder.setOutputFile(mFileName);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+                if ( f==0){
 
-        try {
-            mRecorder.prepare();
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed");
-        }
+                    mRecorder = new MediaRecorder();
+                    mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+                    mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+                    mRecorder.setOutputFile(mFileName);
+                    mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
-        mRecorder.start();
+                    try {
+                        mRecorder.prepare();
+                    } catch (IOException e) {
+                        Log.e(LOG_TAG, "prepare() failed");
+                    }
+
+                    mRecorder.start();
+                }
+                else
+                {
+                    mRecorder.resume();
+                }
+
+
+            }
+
+
+    private void pauseRecording(){
+        mRecorder.pause();
+        f = 1;
     }
 
     private void stopRecording() {
+
         mRecorder.stop();
         mRecorder.release();
         mRecorder = null;
 
         uploadAudio();
-
     }
 
     private void uploadAudio(){
@@ -239,9 +176,9 @@ public class MainActivity extends AppCompatActivity  {
         mProgress.setMessage("Uploading Audio");
         mProgress.show();
 
-      save = PhoneNumber.no;
+        save = PhoneNumber.no;
 
-        StorageReference filepath = mStorage.child(save).child(millisInString);
+        StorageReference filepath = mStorage.child(save).child("new_audio");
 
         Uri uri = Uri.fromFile(new File(mFileName));
 
@@ -250,7 +187,7 @@ public class MainActivity extends AppCompatActivity  {
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 mProgress.dismiss();
 
-                mTextView.setText("Uploading Finished");
+                mTextView.setText("Complaint Registered");
 
             }
         });

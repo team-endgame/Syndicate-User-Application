@@ -30,6 +30,7 @@ public class VerifyMobile extends AppCompatActivity {
     EditText otp;
     Button login;
     String no;
+    Button next;
 
     private FirebaseAuth mAuth;
     private String mVerificationId;
@@ -50,6 +51,15 @@ public class VerifyMobile extends AppCompatActivity {
 
         login = (Button) findViewById(R.id.login);
 
+        next = (Button)findViewById(R.id.next);
+
+        next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent nextone = new Intent(VerifyMobile.this,MainActivity.class);
+                startActivity(nextone);
+            }
+        });
 
 
 

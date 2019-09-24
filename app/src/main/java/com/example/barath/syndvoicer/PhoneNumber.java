@@ -12,13 +12,19 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class PhoneNumber extends AppCompatActivity {
 
     EditText mobile;
     Button button;
     public static  String no;
+
+    private FirebaseAuth mAuth;
 
     private static String TAG = "PermissionDemo";
     private static final int RECORD_REQUEST_CODE = 101;
@@ -30,10 +36,10 @@ public class PhoneNumber extends AppCompatActivity {
 
         askpermissions();
 
-
         mobile = (EditText) findViewById(R.id.mobile);
 
         button = (Button) findViewById(R.id.button);
+
 
 
         button.setOnClickListener(new View.OnClickListener() {
@@ -64,7 +70,7 @@ public class PhoneNumber extends AppCompatActivity {
 
 
     private void askpermissions() {
-        String permissions[] = {Manifest.permission.ACCESS_COARSE_LOCATION,
+        String permissions[] = {
                 Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.READ_SMS,
@@ -79,9 +85,7 @@ public class PhoneNumber extends AppCompatActivity {
                 ContextCompat.checkSelfPermission(this,
                         permissions[3]) == PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this,
-                        permissions[4]) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this,
-                        permissions[5]) == PackageManager.PERMISSION_GRANTED){
+                        permissions[4]) == PackageManager.PERMISSION_GRANTED){
             Toast.makeText(this,"Permission Granted",Toast.LENGTH_SHORT).show();
 
 
@@ -109,7 +113,6 @@ public class PhoneNumber extends AppCompatActivity {
             }
         }
     }
-
 
 
 

@@ -42,4 +42,15 @@
         android:layout_marginTop="80dp"></Button>
 
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/next"
+        android:layout_below="@+id/login"
+        android:layout_centerHorizontal="true"
+        android:text="NEXT"
+        android:layout_marginTop="70dp"
+        ></Button>
+
+
 </RelativeLayout>
